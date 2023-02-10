@@ -49,11 +49,6 @@ RUN apt-get update \
 RUN rm -rf /etc/apache2/sites-enabled \
 	&& ln -s /var/www/html/.devcontainer/sites-enabled /etc/apache2/sites-enabled
 
-# Adding VSCode user and fixing permissions
-RUN groupadd vscode && useradd -rm -d /var/www -s /bin/bash -g vscode -G www-data -u 1001 vscode \
-    && chown -R www-data:www-data /var/www \
-    && chmod g+w /var/www
-
 # Check for and run optional user-supplied command to enable (advanced) customizations of the dev container
 RUN if [ -n "${DEV_CONTAINER_USER_CMD_POST}" ]; then echo "${DEV_CONTAINER_USER_CMD_POST}" | sh ; fi
 
@@ -83,6 +78,11 @@ RUN apt-get autoremove -y \
     && rm -rf /tmp/l_opencl_p_18.1.0.015*
 
 RUN /usr/bin/pip3 install -r /var/www/hashtopolis-agent/requirements.txt
+
+# Adding VSCode user and fixing permissions
+RUN groupadd vscode && useradd -rm -d /var/www -s /bin/bash -g vscode -G www-data -u 1001 vscode \
+    && chown -R www-data:www-data /var/www \
+    && chmod g+w /var/www
 
 # Switching to vscode user and working dir
 WORKDIR /var/www
