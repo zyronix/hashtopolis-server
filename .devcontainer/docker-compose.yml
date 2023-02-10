@@ -1,7 +1,6 @@
 version: "3"
 services:
   hashtopolis:
-    env_file: .env
     container_name: hashtopolis
     build:
       context: .
