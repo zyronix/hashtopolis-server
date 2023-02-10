@@ -41,6 +41,16 @@
                 "uriFormat": "http://localhost:%s",
                 "action": "openExternally"
             }
+        },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${fileDirname}",
+            "args": ["--url", "http://hashtopolis/api/server.php", "--debug", "--voucher", "devvoucher"],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

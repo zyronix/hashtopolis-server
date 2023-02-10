@@ -2,6 +2,8 @@ FROM php:8-apache
 
 ARG DEV_CONTAINER_USER_CMD_PRE
 ARG DEV_CONTAINER_USER_CMD_POST
+ARG GITHUB_USER
+ARG GITHUB_TOKEN
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -54,6 +56,33 @@ RUN groupadd vscode && useradd -rm -d /var/www -s /bin/bash -g vscode -G www-dat
 
 # Check for and run optional user-supplied command to enable (advanced) customizations of the dev container
 RUN if [ -n "${DEV_CONTAINER_USER_CMD_POST}" ]; then echo "${DEV_CONTAINER_USER_CMD_POST}" | sh ; fi
+
+COPY clone-repos.sh /usr/local/bin
+RUN clone-repos.sh
+
+RUN apt-get update \
+    && apt-get install python3 python3-pip -y
+
+RUN cd /tmp \
+    && apt install wget lsb-release libnuma-dev pciutils cpio -y \
+    && wget http://registrationcenter-download.intel.com/akdlm/irc_nas/vcp/15532/l_opencl_p_18.1.0.015.tgz \
+    && tar xzvf l_opencl_p_18.1.0.015.tgz \
+    && cd l_opencl_p_18.1.0.015 \
+    && echo "ACCEPT_EULA=accept" > silent.cfg \
+    && echo "PSET_INSTALL_DIR=/opt/intel" >> silent.cfg \
+    && echo "CONTINUE_WITH_OPTIONAL_ERROR=yes" >> silent.cfg \
+    && echo "CONTINUE_WITH_INSTALLDIR_OVERWRITE=yes" >> silent.cfg \
+    && echo "COMPONENTS=DEFAULTS" >> silent.cfg \
+    && echo "PSET_MODE=install" >> silent.cfg \
+    && ./install.sh -s silent.cfg
+
+# Clean
+RUN apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/l_opencl_p_18.1.0.015*
+
+RUN /usr/bin/pip3 install -r /var/www/hashtopolis-agent/requirements.txt
 
 # Switching to vscode user and working dir
 WORKDIR /var/www
